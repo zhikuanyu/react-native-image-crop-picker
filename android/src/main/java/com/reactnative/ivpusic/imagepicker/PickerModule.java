@@ -95,6 +95,9 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
     private ResultCollector resultCollector = new ResultCollector();
     private Compression compression = new Compression();
     private ReactApplicationContext reactContext;
+    
+    // fix 与upgrade冲突
+    private String fileProviderAuthorities = "provider";
 
     PickerModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -143,6 +146,12 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
         }
 
         fileOrDirectory.delete();
+    }
+    
+    // fix 与upgrade冲突
+    @ReactMethod
+    public void setFileProviderAuthorities(String fileProviderAuthorities) {
+      this.fileProviderAuthorities = fileProviderAuthorities;
     }
 
     @ReactMethod
@@ -298,9 +307,13 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 mCameraCaptureURI = Uri.fromFile(imageFile);
             } else {
+                // fix 与upgrade冲突
                 mCameraCaptureURI = FileProvider.getUriForFile(activity,
-                        activity.getApplicationContext().getPackageName() + ".provider",
-                        imageFile);
+                      activity.getApplicationContext().getPackageName() + "." + this.fileProviderAuthorities,
+                      imageFile);
+                // mCameraCaptureURI = FileProvider.getUriForFile(activity,
+                //        activity.getApplicationContext().getPackageName() + ".provider",
+                //        imageFile);
             }
 
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCameraCaptureURI);
